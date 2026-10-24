@@ -65,6 +65,12 @@ export function validateManifest(
   );
   assert.ok(manifest.host_permissions.includes(BOOKS_MATCH_PATTERN));
   assert.ok(manifest.host_permissions.includes(NAILAIN_MATCH_PATTERN));
+  assert.ok(
+    !manifest.host_permissions.some((match) =>
+      ["<all_urls>", "*://*/*", "https://*/*", "http://*/*"].includes(match),
+    ),
+    "Release must not grant whole-internet host access",
+  );
   assert.deepEqual(
     manifest.host_permissions.filter((match) => match.includes("kotoban.top")),
     [BOOKS_MATCH_PATTERN],

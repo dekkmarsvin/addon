@@ -120,6 +120,10 @@ test("manifests reject stale versions, foreign identities and expanded site scop
     { ...manifest(), key: "" },
     {
       ...manifest(),
+      host_permissions: [...manifest().host_permissions, "<all_urls>"],
+    },
+    {
+      ...manifest(),
       host_permissions: ["*://*.kotoban.top/*", NAILAIN_MATCH_PATTERN],
     },
     {
