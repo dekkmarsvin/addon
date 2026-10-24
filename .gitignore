@@ -7,4 +7,10 @@ web-ext.config.ts
 
 update.json
 
-pnpm-workspace.yaml
+release-assets/
+.env
+.env.*
+*.pem
+*.key
+test-results/
+playwright-report/

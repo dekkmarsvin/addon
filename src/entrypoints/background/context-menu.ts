@@ -4,6 +4,7 @@ import { exportLogs } from "@/utils/log/export";
 import { getRedirectionResult } from "./redirect";
 import { VERSION } from "@/shared/consts";
 import { LOG_MAX_ENTRIES } from "@/utils/log/shared";
+import { NAILAIN_MATCH_PATTERN, RELEASES_URL } from "@/shared/deployment";
 
 type OnClickData = Browser.contextMenus.OnClickData;
 type CreateProperties = Browser.contextMenus.CreateProperties;
@@ -69,7 +70,7 @@ const contextMenuDefs: Record<string, ContextMenuDefItem> = {
     handler(info: OnClickData) {
       if (info.menuItemId != "check-release") return;
       void browser.tabs.create({
-        url: "https://github.com/auto-novel/addon/releases",
+        url: RELEASES_URL,
         active: true,
       });
     },
@@ -98,60 +99,6 @@ const contextMenuDefs: Record<string, ContextMenuDefItem> = {
       void handleClearLogs();
     },
   },
-  "copy-auth-info": {
-    info: {
-      id: "copy-auth-info",
-      title: "复制机翻站认证信息到当前域",
-      type: "normal",
-      contexts: ["page"],
-      documentUrlPatterns: ["*://localhost/*"],
-    } satisfies CreateProperties,
-    async handler(info: OnClickData, tab?: Tab) {
-      if (info.menuItemId != "copy-auth-info") return;
-      const targetUrl = tab?.url ?? null;
-      if (!targetUrl) return;
-
-      const novelTab = await tabResMgr.findOrCreateTab("https://n.novelia.cc", {
-        maxWait: 1000,
-      });
-      try {
-        const authInfo: string = await browserRemoteExecution({
-          target: { tabId: novelTab.id! },
-          func: () => {
-            const data = localStorage.getItem("auth") ?? "";
-            console.warn("Addon request auto info:", data);
-            return data;
-          },
-          args: [],
-        });
-        debugLog.info("Got auth info:", authInfo);
-
-        if (!authInfo) {
-          await browser.notifications.create({
-            type: "basic",
-            iconUrl: browser.runtime.getURL("/icons/48.png"),
-            title: "错误",
-            message: `错误：请先登录 n.novelia.cc 获取认证信息`,
-          });
-          return;
-        }
-
-        await browser.scripting.executeScript({
-          target: { tabId: tab!.id! },
-          func: (authInfo: string) => {
-            localStorage.setItem("auth", authInfo);
-            alert("已成功复制认证信息到当前域，按确定后刷新页面。");
-            window.location.reload();
-          },
-          args: [authInfo],
-        });
-      } finally {
-        if (novelTab.id != null) {
-          await tabResMgr.releaseTab(novelTab.id, 3_000);
-        }
-      }
-    },
-  },
   "open-in-auto-novel": {
     info: {
       id: "open-in-auto-novel",
@@ -168,6 +115,7 @@ const contextMenuDefs: Record<string, ContextMenuDefItem> = {
         "*://*.pixiv.net/*",
         "*://*.alphapolis.co.jp/*",
         "*://novelism.jp/*",
+        NAILAIN_MATCH_PATTERN,
       ],
     } satisfies CreateProperties,
     handler(info: OnClickData, tab?: Tab) {

@@ -1,4 +1,5 @@
 import packageJson from "@/../package.json";
+import { BOOKS_ORIGIN } from "./deployment";
 
 export const IS_DEBUG = import.meta.env.DEV;
 
@@ -40,4 +41,8 @@ export const IS_TIMING = false;
   }
 })();
 
-export const AutoNovelDomains = ["n.novelia.cc", "n.sakura-share.one"];
+export const AutoNovelDomains = [
+  "n.novelia.cc",
+  "n.sakura-share.one",
+  new URL(BOOKS_ORIGIN).hostname,
+];

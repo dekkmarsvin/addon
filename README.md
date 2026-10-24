@@ -1,108 +1,60 @@
-# Addon
+# Kotoban Addon
 
-[![GPL-3.0](https://img.shields.io/github/license/auto-novel/addon)](https://github.com/auto-novel/addon#license)
-[![cd-addon](https://github.com/auto-novel/addon/actions/workflows/cd-addon.yml/badge.svg)](https://github.com/auto-novel/addon/actions/workflows/cd-addon.yml)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/auto-novel/addon/latest/total?label=下载量-最新&color=red&link=https%3A%2F%2Fgithub.com%2Fauto-novel%2Faddon%2Freleases)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/auto-novel/addon/total?label=下载量-总计&color=violet&link=https%3A%2F%2Fgithub.com%2Fauto-novel%2Faddon%2Freleases)
+供 [Kotoban 小說站](https://books.kotoban.top/)使用的 Chrome／Edge／Firefox Manifest V3 擴充套件，提供瀏覽器端抓取、文庫匯入與閱讀器外部資源存取。
 
-这是一个用于轻小说机翻站的用户侧 Chrome/Firefox 插件(Manifest v3)，
-旨在扩展机翻站的功能，例如第三方翻译、智能导入、前端爬虫。
+本專案 fork 自 [auto-novel/addon](https://github.com/auto-novel/addon)，保留上游作者及貢獻者的成果，以 [GPL-3.0](LICENSE) 授權。此 fork 的版本與上游分別發布。
 
-## 使用说明
+## 安裝
 
-### 翻译和导入功能：
+從本 fork 的[最新發布頁](https://github.com/dekkmarsvin/addon/releases/latest)下載對應瀏覽器的檔案。下列 `<版本>` 以該頁版本為準；可用同頁的 `SHA256SUMS` 核對下載檔案。
 
-支持机翻站的文库自动导入，有道翻译功能。
+| 瀏覽器         | 檔案                                         | 安裝方式                     |
+| -------------- | -------------------------------------------- | ---------------------------- |
+| Chrome／Edge   | `kotoban-addon-<版本>-chromium.zip`          | 解壓後載入擴充套件目錄       |
+| Firefox 桌面版 | `kotoban-addon-<版本>-firefox-temporary.zip` | 暫時載入；重啟瀏覽器後須重載 |
+| 原始碼         | `kotoban-addon-<版本>-sources.zip`           | 對照原始碼與建置資訊         |
 
-### 阅读器外部资源
+### Chrome／Edge
 
-处理 Pixiv 之类的文章中引用的图片等外部资源，绕过服务器 Referer 限制。
+1. 解壓 Chromium zip，保留內含 `manifest.json` 的目錄。
+2. 開啟 Chrome 的 `chrome://extensions/`，或 Edge 的 `edge://extensions/`。
+3. 開啟「開發人員模式」，選擇「載入未封裝項目／載入已解壓縮的擴充功能」，指定該目錄。
+4. 重新載入已開啟的 Kotoban 書站頁面。
 
-### 跳转功能
-
-在机翻站支持的小说网站的**小说页面**上右键选择选项，可以直接跳转到对应的机翻站页面。
-也可以直接点击浏览器右上角的机翻站插件的图标。
-
-### 认证信息转移
-
-AutoNovel 开发阶段本地启动的 `pnpm dev` 站点，右键可以将主站的认证信息复制到 `localhost:5173` 中，实现登录。
-
-## 安装
-
-打开最新版本的[发布页](https://github.com/auto-novel/addon/releases/latest)，下载和浏览器对应的 zip 文件。
-
-国产浏览器绝大多数使用的是Chrome内核，请参考Chrome的安装方式。但是有些浏览器（比如搜狗）不提供从本地文件安装插件，这种无法使用。
-
-> [!CAUTION]
->
-> **注意**，如果在机翻站使用【**需要将机翻站网址加入浏览器广告拦截扩展的白名单**】
->
-> **解释**：这是因为有道的 rlog api 被 adblock 拦截。机翻站调用 rlog 时也会被拦截，导致后续请求失败。
->
-> 机翻站本身无任何广告。
-
-### Chrome
-
-- 将 zip 文件解压到文件夹。
-- 打开 Chrome 浏览器，进入 `chrome://extensions/` 页面。
-- 打开 `开发者模式`，选择 `加载已解压的扩展程序`，选择解压的目录（包含 `manifest.json` 文件）。
-- 安装后不能删除解压目录。
-
-![Chrome安装步骤](https://n.novelia.cc/files-extra/chrome.png)
-
-### Edge
-
-安装步骤参考 Chrome。
-
-![Edge安装步骤](https://n.novelia.cc/files-extra/edge.png)
+此 fork 的固定 Chromium ID 為 `cipknbnhmhaddapcipjncdaaibgcidgi`，與上游不同。更新時使用同一目錄並在擴充套件管理頁重新載入；請保留該目錄。
 
 ### Firefox
 
-#### 自动更新版
+1. 開啟 `about:debugging#/runtime/this-firefox`。
+2. 選擇「暫時載入附加元件」，指定 Firefox temporary zip，或解壓後的 `manifest.json`。
+3. 重新載入 Kotoban 書站頁面。Firefox 重啟後需再次暫時載入。
 
-> [!note]
-> 注意，插件可能会被 firefox 下架，但是安装后即使下架也能用（手动重新启用即可）。
+Firefox 識別碼為 `addon@books.kotoban.top`。目前發布的是**未簽章的暫時載入包**，不提供可永久安裝的簽章 XPI 或自動更新。正式發行須另完成 Mozilla 簽章；本次未驗證行動瀏覽器安裝。
 
-- 从最新的下载页面中下载 `addon-${version}-firefox.xpi` 文件。
-- 打开 Firefox 浏览器，进入 `about:addons`。
-- 将 xpi 文件直接拖入浏览器页面中，即可安装。
+## 功能與網站權限
 
-#### 单次安装
+- 在 Kotoban 書站向 `window.Addon` 提供功能橋接，供瀏覽器端抓取、文庫匯入與外部圖片存取使用。
+- 支援 NAILAIN 的 `https://nailain.alwaysdata.net/` 網域權限與小說頁面跳轉；其餘上游小說網站功能依網站與書站支援情況使用。
+- 在支援的小說頁面使用工具列圖示或右鍵選單，可跳轉到 Kotoban 對應頁面。
+- 為執行這些功能，擴充套件可讀取／修改授權網站的 Cookie、開啟或重用分頁、執行分頁內腳本，以及處理請求標頭與下載。
 
-- 打开 Firefox 浏览器，进入 `about:debugging#/runtime/this-firefox` 页面。
-- 点击 `临时加载附加组件` 按钮，选择之前下载的 zip 文件。
-- 安装后不能删除 zip 文件，每次打开浏览器都需要重新加载。
+完整的權限及可存取網域以安裝包的 `manifest.json` 為準。網站權限與頁面 API 注入範圍是不同設定；授予小說來源存取權限不代表會在該來源頁面公開 `window.Addon`。
 
-### 移动端
+## 確認連線
 
-想在手机上安装插件翻译的朋友，可以试试 `Firefox Nightly`
+安裝後開啟 `https://books.kotoban.top/`，在該頁開發者工具 Console 執行：
 
-> Kiwi、Yandex 等手机浏览器支持插件功能，安装步骤和 Chrome 类似，请到官网下载
->
-> 但是，注意这些浏览器不在本仓库测试和支持范围内。不保证能用。
+```js
+await window.Addon.info();
+```
 
-#### Firefox (Android)
+應回傳此 fork 的版本及 `https://books.kotoban.top/`。若沒有 `window.Addon`，先確認擴充套件已啟用、已允許本站存取，再重新載入頁面。此檢查只驗證頁面與擴充套件連線；不會啟動小說抓取或翻譯。
 
-Android 手机建议使用 [Firefox Nightly](https://play.google.com/store/apps/details?id=org.mozilla.fenix) 浏览器。
+## 資料與日誌
 
-- 从 [发布页](https://github.com/auto-novel/addon/releases/latest) 下载的`xpi文件`
+擴充套件會依呼叫的功能存取第三方小說／翻譯服務，並可能使用該網站的 Cookie；網路通訊不限於 Kotoban API。Cookie 功能可讀取、寫入或刪除授權網站的 Cookie。
 
-- 打开`设置`点击`关于 Firefox Nightly`后`快速点击 Firefox 图标 5 次`，
-
-- 返回上一页点击 `从文件安装扩展`，选择下载的 `xpi 文件`
-
-> 之后新版本插件发布后，浏览器会自动更新插件。
-
-## 如何测试插件是否工作
-
-- 进入 `https://n.novelia.cc/wenku-edit`。
-- 使用任意 Amazon 文库地址，例如：`https://www.amazon.co.jp/dp/4048926667`。
-- 选择`导入`。
-- 检查是否导入成功：中文标题非空，简介是中文而非日文。
-
-> 如果存在问题，请手动打开一次对应的 Amazon 页面和 `dict.youdao.com` 页面获取用户凭证或者过人机验证。
->
-> 之后刷新 wenku-edit 页面，重试导入流程。
+除錯日誌保留在擴充套件的本地儲存，右鍵選單可匯出或清除，內容包括網址、錯誤與 Cookie 名稱等診斷資訊。`cookiesStatus()` 只向頁面回傳 Cookie 中繼資料，不含值。分享日誌前仍請檢查並移除敏感內容；請勿在 Issue、公開日誌或測試資料中放入真實帳密、Cookie 或 API Key。
 
 ## API
 
@@ -165,6 +117,7 @@ interface AddonApi {
 
   info(): Promise<InfoResult>;
 
+  /** 回傳 Cookie 中繼資料，不包含 value。 */
   cookiesStatus(params: {
     url?: string;
     domain?: string;
@@ -236,30 +189,28 @@ try {
 
 扩展必须同时具有初始请求域名和重定向目标域名的 `host_permissions`，否则浏览器可能不会向扩展暴露完整跳转链，也无法在目标域标签页执行脚本。
 
-## 开发说明
+## 開發與上游同步
+
+本 fork 以 [`90454c2e19004a9fb0455d4ba49b5b7c2e1dedd8`](https://github.com/auto-novel/addon/commit/90454c2e19004a9fb0455d4ba49b5b7c2e1dedd8) 為上游起點。維護差異限於 Kotoban 發布身分、網站／NAILAIN 權限、舊認證轉移功能退役，以及必要的橋接安全與可重現發布驗證。
+
+使用 Node.js 24 與 `package.json` 指定的 pnpm 版本：
 
 ```shell
-> pnpm install  # 安装依赖
-> pnpm prepare  # 设置 husky git hooks
-> pnpm dev      # 打开调试浏览器
+corepack pnpm install --frozen-lockfile
+corepack pnpm compile
+corepack pnpm build
+corepack pnpm zip
 ```
 
-## 免责声明
+真實 Chromium bridge smoke 使用獨立暫存 profile 與合成網站資料；不讀取目前瀏覽器的帳號或 Cookie：
 
-> [!caution]
->
-> - 声明：本工具旨在学习与交流，按“现状”提供。用户应确保其使用行为已获得必要授权并符合适用法律与目标网站政策，否则请立即停止使用。
-> - 本免责声明可能不时更新。用户继续使用本工具即视为接受更新后的条款。建议用户定期查阅最新版本。
+```shell
+corepack pnpm exec playwright install chromium
+corepack pnpm test:browser
+```
 
-## 安全声明
+本機開發可用 `corepack pnpm dev` 或 `corepack pnpm dev:firefox`。發布流程及維護邊界見 [AGENTS.md](AGENTS.md)；功能修正優先回饋上游，避免長期維持第二套通用抓取／RPC 實作。
 
-> [!note]
->
-> - 构建与透明性
->   - 本工具的 release 版本由 GitHub Actions 自动构建打包，完全基于公开的开源代码生成。源代码遵循 GPL‑3.0 协议开源，欢迎审计与复现构建流程。
-> - 通信与数据上报
->   - 本工具仅通过机翻站接口上报用户声明要求爬取的数据，不与除该接口以外的任何第三方服务器建立通信连接。
-> - 本地数据与隐私
->   - 本工具不读取、收集或存储用户的 Cookies、浏览记录等敏感信息，也不在本地或远端保存任何相关数据。
-> - 漏洞发现与披露
->   - 如发现安全漏洞或潜在风险，请提交至本项目的安全问题通道/私密 Issue
+## 使用與授權
+
+使用者應確認自己的存取與資料使用符合目標網站的政策及相關授權。程式依 GPL-3.0 與授權檔中的保固條款提供；原始授權與上游作者歸屬保留。

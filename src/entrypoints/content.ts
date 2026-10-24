@@ -1,4 +1,5 @@
 import { MessageType } from "@/rpc/types";
+import { SITE_MATCH_PATTERNS } from "@/shared/deployment";
 
 function isAddonDebugLogMessage(data: unknown): boolean {
   return (
@@ -42,11 +43,7 @@ function forwardMessageToAddon() {
 }
 
 export default defineContentScript({
-  matches: [
-    "http://localhost/*",
-    "https://*.novelia.cc/*",
-    "https://*.fishhawk.top/*",
-  ],
+  matches: SITE_MATCH_PATTERNS,
   runAt: "document_start",
   async main() {
     // add addon mark to notify web side

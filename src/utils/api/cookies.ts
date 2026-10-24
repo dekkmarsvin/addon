@@ -7,7 +7,7 @@ export async function cookies_get(
   domain: string,
 ): Promise<Browser.cookies.Cookie[]> {
   const cookies = await browser.cookies.getAll({ domain });
-  debugLog("cookies_get", domain, cookies);
+  debugLog("cookies_get", domain, { count: cookies.length });
   return cookies;
 }
 
@@ -87,17 +87,13 @@ export async function cookies_patch(
 
     if (existing) {
       // Merge existing cookie with patch
-      debugLog(
-        `Merging cookie: ${key} for ${url}, patch: ${JSON.stringify(patch)}`,
-      );
+      debugLog(`Merging cookie: ${key} for ${url}`);
       const merged: Browser.cookies.Cookie = { ...existing, ...patch };
       return browser.cookies.set(cookie2SetDetail(merged));
     }
 
     // Create new cookie
-    debugLog(
-      `Creating new cookie: ${key} for ${url}, patch: ${JSON.stringify(patch)}`,
-    );
+    debugLog(`Creating new cookie: ${key} for ${url}`);
     const domain = patch.domain ?? new URL(url).hostname;
     const setDetail: Browser.cookies.SetDetails = {
       url,

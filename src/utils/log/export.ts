@@ -46,9 +46,7 @@ function formatTextLog(entry: LogEntry): string {
   return [
     `[${entry.isoTime}] [${entry.level.toUpperCase()}] [${entry.context}] ${entry.text}`,
     `version: ${entry.version}`,
-    `function: ${entry.functionName}`,
     `args: ${JSON.stringify(entry.args)}`,
-    `stack:\n${entry.stack}`,
   ].join("\n");
 }
 

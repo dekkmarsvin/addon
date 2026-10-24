@@ -12,35 +12,41 @@ import type { ClientCmd, SerializableResponse } from "@/rpc/types";
 import { serializeRequest } from "@/rpc/types";
 import { IS_TIMING } from "@/shared/consts";
 import { debugLog } from "@/utils/log/frontend";
+import { CHROME_EXTENSION_ID } from "@/shared/deployment";
 
 function sendMessageChrome<T>(msg: MessageRequest): Promise<T> {
-  const addonId = "kenigjdcpndlkomhegjcepokcgikpdki";
   return new Promise((resolve, reject) => {
-    console.debug(msg);
-    browser.runtime.sendMessage(addonId, msg, (response: MessageResponse) => {
-      if (browser.runtime.lastError) {
-        console.error(
-          "Error sending message to addon:",
-          browser.runtime.lastError,
+    console.debug("[Kotoban.addon] Request:", msg.payload.cmd);
+    browser.runtime.sendMessage(
+      CHROME_EXTENSION_ID,
+      msg,
+      (response: MessageResponse) => {
+        if (browser.runtime.lastError) {
+          console.error(
+            "Error sending message to addon:",
+            browser.runtime.lastError,
+          );
+          return reject(browser.runtime.lastError);
+        }
+        if (!response) {
+          return reject(new Error("No response from addon"));
+        }
+        console.debug(
+          "[Kotoban.addon] Request completed:",
+          response.payload.success,
         );
-        return reject(browser.runtime.lastError);
-      }
-      if (!response) {
-        return reject(new Error("No response from addon"));
-      }
-      console.debug(response);
-      if (response.payload.success) {
-        return resolve(response.payload.result);
-      } else {
-        return reject(deserializeError(response.payload.error));
-      }
-    });
+        if (response.payload.success) {
+          return resolve(response.payload.result);
+        } else {
+          return reject(deserializeError(response.payload.error));
+        }
+      },
+    );
   });
 }
 
 function sendMessageFirefox<T>(msg: MessageRequest): Promise<T> {
-  // const addonId = 'addon@n.novelia.cc';
-  console.debug(msg);
+  console.debug("[Kotoban.addon] Request:", msg.payload.cmd);
   return new Promise<T>((resolve, reject) => {
     const listener = (event: MessageEvent) => {
       if (event.source !== window) {
@@ -53,7 +59,7 @@ function sendMessageFirefox<T>(msg: MessageRequest): Promise<T> {
       if (resp.id != msg.id) return;
 
       window.removeEventListener("message", listener);
-      console.debug(resp.payload);
+      console.debug("[Kotoban.addon] Request completed:", resp.payload.success);
       if (resp.payload.success) {
         return resolve(resp.payload.result);
       } else {

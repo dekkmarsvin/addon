@@ -13,6 +13,7 @@ import { alarmListener } from "./alarm";
 import { redirectToAutoNovel } from "./redirect";
 import { addContextMenu, handleContextMenu } from "./context-menu";
 import { SpoofInit } from "@/entrypoints/background/spoof";
+import { isTrustedMessageSender } from "@/shared/deployment";
 
 const { promise: initCompletePromise, resolve: resolveInit } =
   Promise.withResolvers<void>();
@@ -22,8 +23,17 @@ const messageFn = (
   sender: Browser.runtime.MessageSender,
   sendResponse: (response: any) => void,
 ) => {
+  if (
+    !isTrustedMessageSender(sender, {
+      id: browser.runtime.id,
+      rootUrl: browser.runtime.getURL("/"),
+    })
+  ) {
+    console.warn("[Kotoban.addon] Rejected untrusted message sender");
+    return false;
+  }
   if (IS_DEBUG) {
-    debugLog("Received message: ", message, sender);
+    debugLog("Received message type:", message.type);
   }
 
   switch (message.type) {
@@ -61,7 +71,7 @@ const messageFn = (
         await initCompletePromise;
         dispatchCommand(msg.payload.cmd, msg.payload.params, env)
           .then((result) => {
-            debugLog("Crawler Result: ", result);
+            debugLog("Command completed:", msg.payload.cmd);
 
             const resp = {
               type: MessageType.Response,

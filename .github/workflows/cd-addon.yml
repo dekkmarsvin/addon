@@ -1,110 +1,77 @@
-name: Publish Addon
+name: Release Addon
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
-    tags: [v*]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-addon
-  cancel-in-progress: true
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing vX.Y.Z tag, exactly matching package.json"
+        required: true
+        type: string
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
+  cancel-in-progress: false
 
 jobs:
-  build-and-release:
+  release:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+    env:
+      HUSKY: "0"
+      RELEASE_TAG: ${{ inputs.release_tag }}
     steps:
       - uses: actions/checkout@v5
-
+        with:
+          ref: ${{ github.event_name == 'push' && github.ref || inputs.release_tag }}
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
         with:
-          version: "latest"
-          run_install: false
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install dependencies
+          node-version: 24
+          cache: pnpm
+      - name: Require an exact version tag on this source commit
+        id: tag
+        run: pnpm release:tag
+      - name: Frozen dependency installation
+        run: pnpm install --frozen-lockfile
+      - name: Unit regressions
+        run: pnpm test
+      - name: Typecheck
+        run: pnpm compile
+      - name: Build and zip Chrome and Firefox MV3
+        run: pnpm zip
+      - name: Verify fork identities, ZIP contents and checksums
+        run: pnpm release:artifacts
+      - name: Install test Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Real MV3 bridge with isolated browser fixtures
+        run: pnpm test:browser
+      - name: Recheck release assets and unchanged tagged source
         run: |
-          pnpm install --frozen-lockfile || true
-          pnpm approve-builds esbuild @tailwindcss/oxide sharp spawn-sync
-          pnpm install --frozen-lockfile
-
-
-      - name: Zip extensions
-        run: |
-          pnpm zip
-          pnpm zip:firefox
-          rm .output/*-sources.zip
-
-      - name: Generate release metadata
-        id: metadata
-        run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            echo "Release ${{ github.ref_name }}"
-            echo "prerelease=false" >> $GITHUB_OUTPUT
-            echo "release_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-            echo "tag_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "Prerelease nightly"
-            echo "prerelease=true" >> $GITHUB_OUTPUT
-            echo "release_name=Nightly Build ($(date +'%Y-%m-%d'))" >> $GITHUB_OUTPUT
-            echo "tag_name=nightly" >> $GITHUB_OUTPUT
-          fi
-
-      - name: rename output files
-        run: |
-          if [[ "${{ steps.metadata.outputs.prerelease }}" == "true" ]]; then
-            for file in .output/addon-*.zip; do
-              [ -e "$file" ] || continue
-              new_file=$(echo "$file" | sed 's/addon-.*-/addon-nightly-/')
-              echo "Renaming '$file' to '$new_file'"
-              mv "$file" "$new_file"
-            done
-          fi
-
-      - name: Get the version
-        id: get_version
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            # 从 github.ref_name (例如 v1.1.1) 中移除 'v'
-            VERSION=${{ github.ref_name }}
-            echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
-          else
-            echo "version=nightly" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Generate update.json for Firefox
-        uses: jsdaniell/create-json@v1.2.3
-        with:
-          name: "update.json"
-          json: >-
-            {
-              "addons": {
-                "addon2@n.novelia.cc": {
-                  "updates": [
-                    {
-                      "version": "${{ steps.get_version.outputs.version }}",
-                      "update_link": "https://github.com/auto-novel/addon/releases/download/v${{ steps.get_version.outputs.version }}/addon-${{ steps.get_version.outputs.version }}-firefox.xpi"
-                    }
-                  ]
-                }
-              }
-            }
-
+          pnpm release:check
+          pnpm release:tag
       - uses: softprops/action-gh-release@v2
         with:
-          prerelease: ${{ steps.metadata.outputs.prerelease }}
-          make_latest: ${{ steps.metadata.outputs.prerelease != 'true' }}
-          overwrite_files: ${{ steps.metadata.outputs.prerelease == 'true' }}
-          name: ${{ steps.metadata.outputs.release_name }}
-          tag_name: ${{ steps.metadata.outputs.tag_name }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          target_commitish: ${{ steps.tag.outputs.commit }}
+          name: Kotoban Addon ${{ steps.tag.outputs.tag }}
+          prerelease: false
+          make_latest: true
+          overwrite_files: false
+          fail_on_unmatched_files: true
+          body: |
+            Chrome/Edge: extract the Chromium ZIP and load it as an unpacked extension.
+            Firefox: the unsigned temporary ZIP is for temporary loading in about:debugging only.
+            There is no signed XPI or automatic-update channel in this release.
+            The source ZIP, release-manifest.json and SHA256SUMS identify the same tested build.
+            Source: https://github.com/${{ github.repository }}/tree/${{ steps.tag.outputs.tag }}
           files: |
-            .output/addon-*.zip
-            update.json
+            release-assets/*.zip
+            release-assets/release-manifest.json
+            release-assets/SHA256SUMS
