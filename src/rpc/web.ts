@@ -1,5 +1,6 @@
 import * as Api from "@/utils/api";
 import { deserializeRequest, EnvType, type ClientCmd } from "@/rpc/types";
+import { REPOSITORY_URL } from "@/shared/deployment";
 
 export async function dispatchCommand(
   command: keyof ClientCmd,
@@ -17,8 +18,7 @@ const METHODS: ClientCmd = {
     return await {
       version: browser.runtime.getManifest().version,
       homepage_url:
-        browser.runtime.getManifest().homepage_url ??
-        "https://github.com/auto-novel/addon",
+        browser.runtime.getManifest().homepage_url ?? REPOSITORY_URL,
     };
   },
 

@@ -1,5 +1,13 @@
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, UserManifest, type WxtViteConfig } from "wxt";
+import {
+  BOOKS_ORIGIN,
+  BOOKS_MATCH_PATTERN,
+  NAILAIN_MATCH_PATTERN,
+  SITE_MATCH_PATTERNS,
+  CHROME_PUBLIC_KEY,
+  FIREFOX_ADDON_ID,
+} from "./src/shared/deployment";
 
 const IS_DEBUG = process.env.NODE_ENV === "dev";
 
@@ -9,21 +17,18 @@ export default defineConfig({
     eslintrc: { enabled: true },
   },
   manifestVersion: 3,
+  zip: { zipSources: false },
   manifest: ({ browser }) => {
     let userManifest: UserManifest | any = {
-      name: "轻小说机翻机器人",
-      homepage_url: "https://n.novelia.cc/",
+      name: "Kotoban 小说助手",
+      homepage_url: `${BOOKS_ORIGIN}/`,
       action: {
         default_title: "轻小说机翻站用户侧爬虫插件",
       },
       web_accessible_resources: [
         {
           resources: ["inject.js"],
-          matches: [
-            "https://*.novelia.cc/*",
-            "https://*.fishhawk.top/*",
-            "*://localhost/*",
-          ],
+          matches: SITE_MATCH_PATTERNS,
         },
       ],
       permissions: [
@@ -41,6 +46,8 @@ export default defineConfig({
         "downloads",
       ],
       host_permissions: [
+        BOOKS_MATCH_PATTERN,
+        NAILAIN_MATCH_PATTERN,
         "*://*.novelia.cc/*",
         "*://*.fishhawk.top/*",
         "*://localhost/*",
@@ -69,14 +76,9 @@ export default defineConfig({
     if (browser === "chrome") {
       userManifest = {
         ...userManifest,
-        key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmzpvkqphjS1Od8waHDo12FnmcE7+QkzVTr/MKtv64UzlDhF54W8nJR2v4qWy+gHzJkf6QakEELfE4jOJAdOPxNQFd8YgEvsYk8Acfo9Pyki/3jpBB8dzDemAjABNasNGyd9RIHdOuZd2Evl+0NyUNHaCSzSgPJBcGZzg8ACfp8VGhPltiNlxy/JXQJZStR35fiFndC3WP9qaeztLy+jeg5ieQY8ULNLgJDbL02S1KEIB0ijaR9CICaiSYsPFdPhMlYdR8kYhHhrRfXljoJPw4LH0ThMrOoeNWHI6DgO/qSXgSDx4LknOJ28UPCEqHTkPo6WTDDNLpDhFG3ZwMbpHmQIDAQAB",
+        key: CHROME_PUBLIC_KEY,
         externally_connectable: {
-          matches: [
-            "*://*.novelia.cc/*",
-            "*://*.fishhawk.top/*",
-            "*://localhost/*",
-            "*://example.com/*",
-          ],
+          matches: SITE_MATCH_PATTERNS,
         },
       };
     } else if (browser === "firefox") {
@@ -84,9 +86,7 @@ export default defineConfig({
         ...userManifest,
         browser_specific_settings: {
           gecko: {
-            id: "addon2@n.novelia.cc",
-            update_url:
-              "https://github.com/auto-novel/addon/releases/latest/download/update.json",
+            id: FIREFOX_ADDON_ID,
             data_collection_permissions: {
               required: ["none"],
             },

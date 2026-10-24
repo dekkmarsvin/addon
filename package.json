@@ -2,21 +2,27 @@
   "name": "addon",
   "description": "轻小说机翻站用户侧爬虫插件",
   "private": true,
-  "version": "1.9.3",
+  "version": "1.9.4",
   "type": "module",
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
-
-    "build:chrome": "wxt build",
-    "build:firefox": "wxt build -b firefox",
-    "build": "run-p build:chrome build:firefox",
-
+    "build:chrome": "wxt build -b chrome --mv3",
+    "build:firefox": "wxt build -b firefox --mv3",
+    "build": "run-s build:chrome build:firefox",
     "zip:firefox": "wxt zip -b firefox --mv3",
     "zip:chrome": "wxt zip -b chrome --mv3",
-    "zip": "run-p zip:firefox zip:chrome",
-
+    "zip": "run-s zip:chrome zip:firefox",
     "compile": "vue-tsc --noEmit",
+    "test": "node --import tsx --experimental-test-module-mocks --test tests/*.test.ts",
+    "test:browser": "node --test tests/browser*.mjs",
+    "release:tag": "node --experimental-strip-types scripts/verify-release-tag.ts",
+    "release:artifacts": "tsx scripts/release-artifacts.ts",
+    "release:check": "tsx scripts/release-artifacts.ts --check",
     "postinstall": "wxt prepare",
     "prepare": "husky"
   },
@@ -48,6 +54,8 @@
     "lint-staged": "^16.2.3",
     "npm-run-all2": "^9.0.0",
     "prettier": "3.6.2",
+    "playwright": "1.64.1",
+    "tsx": "4.23.15",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.46.0",
     "vue-tsc": "^3.0.6",
